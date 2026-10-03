@@ -1,0 +1,7 @@
+node_modules/
+.gea/
+dist/
+src/assets/
+.env
+.env.*
+package-lock.json

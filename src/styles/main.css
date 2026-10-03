@@ -1,0 +1,129 @@
+@font-face {
+  font-family: 'Sora';
+  src: url('../assets/fonts/Sora-Bold.ttf');
+  font-weight: 700;
+}
+
+body {
+  margin: 0;
+  background: #000;
+}
+
+.console {
+  width: 410px;
+  height: 502px;
+  padding: 0;
+  background: #000;
+  color: #f4ede8;
+  font-family: 'Sora';
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  width: 354px;
+  font-size: 48px;
+  text-align: center;
+  margin-top: 24px;
+  color: #faf2ea;
+}
+
+.instrument {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 410px;
+  height: 238px;
+  margin-top: 22px;
+}
+
+.readout {
+  width: 354px;
+  height: 22px;
+  margin-top: 20px;
+}
+
+.message {
+  margin-top: 10px;
+  width: 354px;
+  font-size: 21px;
+  line-height: 28px;
+  color: #c9c0bd;
+  text-align: center;
+}
+
+.connect {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 354px;
+  height: 64px;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  font-family: 'Sora';
+  font-weight: 700;
+  font-size: 26px;
+  text-align: center;
+  background: #c52740;
+  color: #fff3ef;
+  margin-top: 18px;
+}
+
+.connect:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.instrument.compact {
+  height: 186px;
+}
+
+.readout.expanded {
+  height: 74px;
+}
+
+.character {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 410px;
+}
+
+.character-canvas {
+  width: 320px;
+  height: 240px;
+}
+
+.carousel {
+  position: relative;
+  width: 410px;
+  height: 342px;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+
+.compact-carousel {
+  height: 290px;
+}
+
+.carousel-track {
+  position: absolute;
+  width: 410px;
+  height: 342px;
+  top: 0;
+}
+
+.character-panel {
+  position: absolute;
+  width: 410px;
+  height: 342px;
+  top: 0;
+}
+
+.character-view {
+  width: 410px;
+}

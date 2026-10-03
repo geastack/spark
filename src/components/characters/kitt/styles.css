@@ -1,0 +1,42 @@
+.scanner {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 340px;
+  height: 64px;
+  gap: 5px;
+}
+
+.cell {
+  width: 32px;
+  height: 36px;
+  background: #f00;
+  border-radius: 2px;
+}
+
+.voicebox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  width: 180px;
+  height: 192px;
+}
+
+.voice-column {
+  display: flex;
+  flex-direction: column;
+  width: 42px;
+  gap: 0;
+}
+
+.center-column {
+  width: 42px;
+}
+
+.voice-segment {
+  width: 42px;
+  height: 10px;
+}

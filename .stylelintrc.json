@@ -1,0 +1,22 @@
+{
+  "ignoreFiles": ["node_modules/**", ".gea/**", "dist/**"],
+  "rules": {
+    "rule-empty-line-before": [
+      "always",
+      {
+        "except": ["first-nested"]
+      }
+    ],
+    "at-rule-empty-line-before": [
+      "always",
+      {
+        "except": ["first-nested"]
+      }
+    ],
+    "block-no-empty": true,
+    "color-no-invalid-hex": true,
+    "declaration-block-no-duplicate-properties": true,
+    "property-no-unknown": true,
+    "selector-type-no-unknown": true
+  }
+}
