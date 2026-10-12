@@ -1,15 +1,9 @@
 import { selectCharacter } from '../config/character.ts'
 import type { Worker } from '@geastack/core'
 
-export type ConversationPhase =
-  | 'idle'
-  | 'connecting'
-  | 'reconnecting'
-  | 'listening'
-  | 'thinking'
-  | 'speaking'
-  | 'closing'
-  | 'error'
+import type { ConversationPhase } from './phases.js'
+
+export type { ConversationPhase } from './phases.js'
 
 type ConversationListener = (phase: ConversationPhase, message: string) => void
 

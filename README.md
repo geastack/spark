@@ -1,7 +1,7 @@
 # Spark
 
 A personal AI agent for the Waveshare ESP32-S3 Touch AMOLED 2.06, built with Gea
-and OpenAI's `gpt-realtime-2.1` through the Realtime API. Each persona combines
+and OpenAI's `gpt-live-1` through the Live API. Each persona combines
 spoken conversation with its own animated display.
 
 ![Gea Spark](docs/assets/gea-spark.gif)
@@ -74,6 +74,20 @@ npm run format
 ```
 
 Shared model and conversation settings are in `src/config/session.ts`.
+Spark connects directly to `wss://api.openai.com/v1/live/sessions`, starts
+`gpt-live-1` with `session.start`, and keeps microphone audio flowing while the
+model speaks. Persona voices and greetings remain configured per character.
+
+The current firmware also requires the native WebSocket connection-header
+support in the sibling [Geastack core repository](https://github.com/geastack/core),
+under `packages/core` and `packages/host`. The pinned npm packages do not yet
+include that change. This workspace has it applied to its installed packages;
+`npm ci` removes those local changes, so reapply the updated types and host
+sources before building until packages containing the change are released.
+
+The earlier muted renderer reproduction in `test/flora-device.tsx` remains
+pinned to `gpt-realtime-2.1` and the Realtime protocol to preserve that test's
+original workload. It does not supply the model configuration for the app.
 
 ## Add a persona
 

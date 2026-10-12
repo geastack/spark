@@ -1,7 +1,14 @@
 import { selectCharacter, type Character } from '../config/character.ts'
-import type { MediaStream, PcmAudioStream, WebSocketInstance } from '@geastack/core'
-import type { ConversationPhase } from './Conversation.js'
-import type { RealtimeSessionConfig } from '../config/session.js'
+import type {
+  MediaStream,
+  PcmAudioStream,
+  WebSocketInstance,
+  WebSocketConstructor,
+} from '@geastack/core'
+import type { ConversationPhase } from './phases.js'
+
+declare const WebSocket: WebSocketConstructor
+import type { RealtimeSessionConfig, TurnDetectionConfig } from '../config/session.js'
 
 // The event fields this client consumes; other server events are ignored.
 interface RealtimeEvent {
@@ -11,9 +18,8 @@ interface RealtimeEvent {
   response_id?: string
   content_index?: number
   error?: { code?: string; message?: string }
-  audio_start_ms?: number
-  audio_end_ms?: number
   response?: { id?: string; status?: 'completed' | 'cancelled' | 'failed' | 'incomplete' }
+  session?: { audio?: { input?: { turn_detection?: TurnDetectionConfig } } }
 }
 
 export interface SessionStart {
@@ -22,6 +28,10 @@ export interface SessionStart {
   sessionConfig: string
   characterId?: string
   sampleRate: number
+  /** Disable microphone capture for output-only device diagnostics. */
+  captureMicrophone?: boolean
+  /** Optional lab gateway; production uses the direct OpenAI endpoint. */
+  realtimeUrl?: string
 }
 
 interface PlaybackItem {
@@ -49,7 +59,6 @@ export class RealtimeSession {
   playbackItems: PlaybackItem[] = []
   playedFrames = 0
   sampleRate = 24000
-  lastPlaybackLogAt = 0
   receivedAudioFrames = 0
   timeout: ReturnType<typeof setTimeout> | null = null
   readonly notify: (message: string) => void
@@ -70,10 +79,13 @@ export class RealtimeSession {
 
     this.character = selectCharacter(options.characterId)
     this.sampleRate = options.sampleRate
-    const microphone = await navigator.mediaDevices.getUserMedia({ audio: true })
+    const microphone =
+      options.captureMicrophone === false
+        ? null
+        : await navigator.mediaDevices.getUserMedia({ audio: true })
 
     if (generation !== this.generation) {
-      for (const track of microphone.getTracks()) {
+      for (const track of microphone?.getTracks() || []) {
         track.stop()
       }
 
@@ -84,10 +96,10 @@ export class RealtimeSession {
     this.audio = new PcmAudioStream(options.sampleRate)
     this.audioTimer = setInterval(() => this.pollAudio(), 40)
     this.update('connecting', `Connecting to ${this.character.name}…`)
-    const socket = new WebSocket(`wss://api.openai.com/v1/realtime?model=${config.model}`, [
-      'realtime',
-      `openai-insecure-api-key.${options.apiKey}`,
-    ])
+    const socket = new WebSocket(
+      options.realtimeUrl ?? `wss://api.openai.com/v1/realtime?model=${config.model}`,
+      ['realtime', `openai-insecure-api-key.${options.apiKey}`],
+    )
 
     this.socket = socket
     socket.onopen = () => {
@@ -143,22 +155,12 @@ export class RealtimeSession {
       }
 
       this.opening = false
-      console.log('[Spark opening] playback drained; microphone upload enabled')
     }
 
     if (this.playing && this.outputDone && audio.drained) {
       this.playing = false
       this.itemId = ''
       this.update('listening', 'I’m listening.')
-    }
-
-    const now = Date.now()
-
-    if (now - this.lastPlaybackLogAt >= 2000) {
-      this.lastPlaybackLogAt = now
-      console.log(
-        `[Spark native] packets=${audio.capturePackets} pending_ms=${audio.capturePendingMs} dropped=${audio.captureDroppedSamples} playback_ms=${audio.queuedMs} played_ms=${audio.playedMs} received_ms=${Math.floor((this.receivedAudioFrames * 1000) / this.sampleRate)}`,
-      )
     }
   }
 
@@ -189,9 +191,6 @@ export class RealtimeSession {
       const heardFrames = Math.max(0, Math.min(audible.frames, playedFrames - audible.startFrame))
       const audioEndMs = Math.floor((heardFrames * 1000) / this.sampleRate)
 
-      console.log(
-        `[Spark truncate] item=${audible.itemId} content=${audible.contentIndex} response_played_ms=${Math.floor((playedFrames * 1000) / this.sampleRate)} item_end_ms=${audioEndMs} item_duration_ms=${Math.floor((audible.frames * 1000) / this.sampleRate)}`,
-      )
       this.socket?.send(
         JSON.stringify({
           type: 'conversation.item.truncate',
@@ -228,13 +227,20 @@ export class RealtimeSession {
       return
     }
 
-    if (event.type !== 'response.output_audio.delta' && !event.type.endsWith('.delta')) {
-      console.log(
-        `[Spark event] type=${event.type} response=${event.response?.id || event.response_id || ''} status=${event.response?.status || ''} audio_start_ms=${event.audio_start_ms || 0} audio_end_ms=${event.audio_end_ms || 0}`,
-      )
+    if (
+      event.type === 'input_audio_buffer.speech_started' ||
+      event.type === 'input_audio_buffer.speech_stopped'
+    ) {
+      console.log(`[Spark speech] ${event.type}`)
     }
 
     if (event.type === 'session.updated' && !this.ready) {
+      const accepted = event.session?.audio?.input?.turn_detection
+
+      if (accepted) {
+        console.log(`[Spark VAD] ${JSON.stringify(accepted)}`)
+      }
+
       this.ready = true
       if (this.timeout !== null) {
         clearTimeout(this.timeout)
@@ -258,7 +264,6 @@ export class RealtimeSession {
       )
       this.update('listening', `Connected to ${this.character.name}`)
     } else if (event.type === 'input_audio_buffer.speech_started' && !this.opening) {
-      console.log(`[Spark turn] speech_started playing=${this.playing} played=${this.playedFrames}`)
       this.interrupt()
     } else if (event.type === 'response.created') {
       // Every response owns its own speaker queue. Server generation can finish

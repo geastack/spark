@@ -106,6 +106,64 @@ test('completion requires both protocol done and actual native playback drain', 
   assert.equal(session.phase, 'listening')
 })
 
+test('output-only diagnostics play audio without opening or attaching a microphone', async (t) => {
+  const { session, audio, counts } = setup()
+  const socket = session.socket
+  const names = ['navigator', 'PcmAudioStream', 'WebSocket'] as const
+  const descriptors = names.map((name) => Object.getOwnPropertyDescriptor(globalThis, name))
+
+  t.after(() => {
+    session.stop()
+    names.forEach((name, index) => {
+      const descriptor = descriptors[index]
+
+      if (descriptor) {
+        Object.defineProperty(globalThis, name, descriptor)
+      } else {
+        Reflect.deleteProperty(globalThis, name)
+      }
+    })
+  })
+  Object.defineProperty(globalThis, 'navigator', {
+    configurable: true,
+    value: {
+      mediaDevices: {
+        getUserMedia() {
+          throw new Error('Microphone must stay closed')
+        },
+      },
+    },
+  })
+  Object.defineProperty(globalThis, 'PcmAudioStream', {
+    configurable: true,
+    value: function () {
+      return audio
+    },
+  })
+  Object.defineProperty(globalThis, 'WebSocket', {
+    configurable: true,
+    value: function () {
+      return socket
+    },
+  })
+
+  await session.start({
+    type: 'start',
+    apiKey: 'key',
+    sessionConfig: '{"model":"test"}',
+    sampleRate: 24000,
+    captureMicrophone: false,
+  })
+  assert.equal(session.microphone, null)
+  session.receive({ type: 'session.updated' })
+  session.receive({ type: 'response.created', response: { id: 'silent' } })
+  session.receive({ type: 'response.output_audio.delta', response_id: 'silent', delta: 'AAAA' })
+  session.receive({ type: 'response.done', response: { id: 'silent', status: 'completed' } })
+  Object.assign(audio, { drained: true })
+  session.pollAudio()
+  assert.deepEqual(counts(), [0, 1], 'output completion must never attach microphone input')
+})
+
 test('barge-in flushes native playback, truncates audible time and rejects late audio', () => {
   const { session, outbound, resets, received } = setup()
 

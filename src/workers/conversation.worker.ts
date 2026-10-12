@@ -1,6 +1,7 @@
-import { RealtimeSession, type SessionStart } from '../services/RealtimeSession.js'
+import type { SessionStart } from '../services/RealtimeSession.js'
+import { LiveSession } from '../services/LiveSession.js'
 
-const session = new RealtimeSession((message) => self.postMessage(message))
+const session = new LiveSession((message) => self.postMessage(message))
 
 self.onmessage = async (event) => {
   if (typeof event.data !== 'string') {
@@ -13,7 +14,7 @@ self.onmessage = async (event) => {
     if (command.type === 'start') {
       await session.start(JSON.parse(event.data) as SessionStart)
     } else if (command.type === 'stop') {
-      session.stop()
+      await session.stop()
       self.close()
     }
   } catch (error) {

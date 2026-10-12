@@ -1,6 +1,7 @@
 import { characterIds } from '../components/characters/registry.js'
 import { Store } from '@geastack/core'
-import { initialCharacter, type CharacterId } from '../config/character.js'
+import { initialCharacter } from '../config/initial-character.js'
+import type { CharacterId } from '../config/character.js'
 
 class CarouselStore extends Store {
   ids: CharacterId[] = [...characterIds]

@@ -33,7 +33,7 @@ function carousel(ids: string[]): CarouselStore {
   return load<{ default: CarouselStore }>('../src/stores/CarouselStore.ts', {
     '@geastack/core': { Store: class {} },
     '../components/characters/registry.js': { characterIds: ids },
-    '../config/character.js': { initialCharacter: { id: ids[0] } },
+    '../config/initial-character.js': { initialCharacter: { id: ids[0] } },
   }).default
 }
 

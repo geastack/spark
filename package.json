@@ -69,7 +69,10 @@
     "defines": [
       "GEA_AUDIO_FULL_DUPLEX=1",
       "GEA_AUDIO_ECHO_CANCELLATION=1",
-      "GEA_AUDIO_AEC_OUTPUT_GAIN_SCALE=3.981071706f",
+      "GEA_AUDIO_AEC_MICROPHONES=2",
+      "GEA_AUDIO_AEC_AUTO_GAIN=1",
+      "GEA_AUDIO_AEC_OUTPUT_GAIN_SCALE=0.25f",
+      "GEA_AUDIO_DMA_DESCRIPTORS=4",
       "GEA_EMBEDDED_TEXT_SPRITE_HOT_STAGE_BYTES=0",
       "GEA_EMBEDDED_WIFI_STATIC_TX_BUFFERS=8",
       "GEA_EMBEDDED_WIFI_CACHE_TX_BUFFERS=16",
@@ -80,6 +83,6 @@
   "engines": {
     "node": "^22.18.0 || >=24"
   },
-  "description": "A personal AI agent built with Gea and OpenAI Realtime",
+  "description": "An animated AI voice companion built with Gea and OpenAI Live",
   "license": "GPL-3.0-only"
 }

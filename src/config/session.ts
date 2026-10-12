@@ -1,4 +1,4 @@
-import type { Character } from './character.js'
+import type { Character } from './types.js'
 
 export interface TurnDetectionConfig {
   type: 'semantic_vad' | 'server_vad'
@@ -24,28 +24,29 @@ export interface RealtimeSessionConfig {
   }
 }
 
+export interface LiveSessionConfig {
+  model: string
+  instructions: string
+  audio: {
+    format: { type: 'audio/pcm'; rate: 24000 }
+    output: { voice: string }
+  }
+}
+
 export function createSessionConfig(character: Character): string {
-  const session: RealtimeSessionConfig = {
-    type: 'realtime',
-    model: 'gpt-realtime-2.1',
-    max_output_tokens: 480,
+  const session: LiveSessionConfig = {
+    model: 'gpt-live-1',
     instructions: `${character.instructions}
 
-Conversation: give complete answers in one or two brief sentences, within about fifteen seconds of speech. For a larger topic, explain one useful part and offer to continue. Listen to the actual question and avoid long monologues. You have no external tools: do not claim to have sent messages, saved reminders, checked live facts, or sensed the environment.`,
+Conversation: give complete answers in one or two brief sentences, within about fifteen seconds of speech. For a larger topic, explain one useful part and offer to continue. Listen to the actual question and avoid long monologues.
+
+Backchannel policy: Acknowledge naturally and briefly without competing with the user.
+Interruption policy: Stop speaking when the user interrupts and listen.
+Delegation policy: No backend is connected. Do not delegate requests or claim to have sent messages, saved reminders, checked live facts, or sensed the environment. Explain any limitation honestly.`,
     audio: {
-      input: {
-        format: { type: 'audio/pcm', rate: 24000 },
-        turn_detection: character.turnDetection ?? {
-          type: 'semantic_vad',
-          eagerness: 'medium',
-          create_response: true,
-          interrupt_response: true,
-        },
-      },
+      format: { type: 'audio/pcm', rate: 24000 },
       output: {
-        format: { type: 'audio/pcm', rate: 24000 },
         voice: character.voice,
-        speed: 1,
       },
     },
   }
