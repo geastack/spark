@@ -27,16 +27,16 @@
   },
   "dependencies": {
     "@geajs/core": "1.5.1",
-    "@geastack/chips": "0.1.5",
-    "@geastack/cli": "0.1.92",
-    "@geastack/compiler": "1.0.21",
-    "@geastack/core": "0.1.35",
-    "@geastack/elements": "0.1.4",
-    "@geastack/engine": "0.1.11",
+    "@geastack/chips": "0.1.8",
+    "@geastack/cli": "0.1.116",
+    "@geastack/compiler": "1.0.49",
+    "@geastack/core": "0.1.53",
+    "@geastack/elements": "0.1.7",
+    "@geastack/engine": "0.1.24",
     "@geastack/geaos": "0.1.3",
-    "@geastack/geatsc-plugin-gea": "0.1.16",
-    "@geastack/host": "0.1.14",
-    "@geastack/targets": "0.1.91"
+    "@geastack/geatsc-plugin-gea": "0.1.28",
+    "@geastack/host": "0.1.23",
+    "@geastack/targets": "0.1.113"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

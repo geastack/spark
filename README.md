@@ -29,7 +29,8 @@ to OpenAI; no laptop bridge is required.
 
 ## Setup
 
-Requires Node.js 22.18+ or 24+, Python 3, a USB data cable, and 2.4 GHz Wi-Fi.
+Requires Git, Node.js 22.18+ or 24+, Python 3, CMake and Ninja, a USB data
+cable, and 2.4 GHz Wi-Fi.
 
 ```sh
 npm ci
@@ -37,8 +38,11 @@ cp .env.example .env
 npx gea setup
 ```
 
-In the setup wizard, select `esp32-s3-touch-amoled-2.06`, name it `amoled`, and
-choose its USB connection. The wizard checks or installs ESP-IDF.
+`gea setup` installs ESP-IDF 6.0.2, the release the board builds with, and
+registers the board. Choose **Known supported board**, select **Waveshare
+ESP32-S3 Touch AMOLED 2.06**, select its USB connection, and keep the
+suggested alias `amoled`. Leave `IDF_PATH` unset in the terminal you build
+from.
 
 To check the board registration, run `npx gea boards list`.
 
@@ -78,25 +82,24 @@ Spark connects directly to `wss://api.openai.com/v1/live/sessions`, starts
 `gpt-live-1` with `session.start`, and keeps microphone audio flowing while the
 model speaks. Persona voices and greetings remain configured per character.
 
-The current firmware also requires the native WebSocket connection-header
-support in the sibling [Geastack core repository](https://github.com/geastack/core),
-under `packages/core` and `packages/host`. The pinned npm packages do not yet
-include that change. This workspace has it applied to its installed packages;
-`npm ci` removes those local changes, so reapply the updated types and host
-sources before building until packages containing the change are released.
-
-The earlier muted renderer reproduction in `test/flora-device.tsx` remains
-pinned to `gpt-realtime-2.1` and the Realtime protocol to preserve that test's
-original workload. It does not supply the model configuration for the app.
+`test/flora-device.tsx` uses `gpt-realtime-2.1` and the Realtime protocol. It
+does not supply the model configuration for the app.
 
 ## Add a persona
 
-Follow an existing character: define its ID, name, voice, instructions, and
-greeting in `character.ts`, then create its `View.tsx` and `styles.css`. Add
-`animation.ts` if it needs a Canvas animation.
+Each persona is a folder under `src/components/characters/`, named by its ID
+(lowercase letters and digits, starting with a letter), next to `kitt/`,
+`nova/`, `echo/` and `flora/`. Follow an existing one:
 
-Place it alongside the existing characters and run `npm run characters` to
-register it. Build and development commands also run registration automatically.
+- `character.ts`: a default export with the `id` (the folder name), `name`,
+  `voice`, `instructions` and `opening` greeting (`satisfies Character`)
+- `View.tsx`: the persona's display, as the default export
+- `styles.css`: its styles
+- `animation.ts` (optional): `prime()` and `paint()` for a Canvas animation
+
+Run `npm run characters` to register it: `scripts/register-characters.ts`
+scans that directory and regenerates `registry.ts`, `CharacterView.tsx` and
+`paint.ts` in it. Build and development commands also run registration automatically.
 Set `AGENT_CHARACTER` to its ID to select it at boot, then rebuild and flash.
 
 ## License
